@@ -2,7 +2,7 @@ from rest_framework import serializers
 from api.models import Teacher
 
 class ListTeacherSerializer(serializers.ModelSerializer):
-    subjects = serializers.CharField(source="subjects.name", default=None)
+    subjects = serializers.StringRelatedField(many=True)
     
     class Meta:
         model = Teacher

@@ -31,15 +31,19 @@ class TeacherViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @transaction.atomic
-    @action(methods=["delete"], detail=True, url_path="remove-teacher")
+    @action(methods=["delete", "get"], detail=True, url_path="remove-teacher")
     def remove_teacher(self, request, pk=None):
         try:
             teacher = Teacher.objects.get(id=pk)
         except Teacher.DoesNotExist:
             return Response({"error": "Teacher not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        teacher.delete()
-        return Response({"message": "Teacher removed successfully."}, status=status.HTTP_204_NO_CONTENT)
+        if request.method == 'GET':
+            serializer = self.get_serializer(teacher)
+            return Response(serializer.data)
+        else:
+            teacher.delete()
+            return Response({"message": "Teacher removed successfully."}, status=status.HTTP_204_NO_CONTENT)
 
     @transaction.atomic
     @action(methods=["patch", "get"], detail=True, url_path="edit-teacher")
@@ -49,8 +53,12 @@ class TeacherViewSet(viewsets.ReadOnlyModelViewSet):
         except Teacher.DoesNotExist:
             return Response({"error": "Teacher not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        serializer = self.get_serializer(teacher, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
+        if request.method == 'GET':
+            serializer = self.get_serializer(teacher)
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'PATCH':
+            serializer = self.get_serializer(teacher, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

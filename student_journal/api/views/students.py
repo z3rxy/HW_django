@@ -22,7 +22,7 @@ class StudentViewSet(viewsets.ReadOnlyModelViewSet):
         return super().get_serializer_class() 
 
     @transaction.atomic
-    @action(methods=["post"], detail=False, url_path="add-student")
+    @action(methods=["post", "get"], detail=False, url_path="add-student")
     def add_student(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -56,11 +56,8 @@ class StudentViewSet(viewsets.ReadOnlyModelViewSet):
         if request.method == 'GET':
             serializer = self.get_serializer(student)
             return Response(serializer.data)
-
         elif request.method == 'PATCH':
-            print('do vyzova')
             serializer = self.get_serializer(student, data=request.data, partial=True)
-            print('posle vyzova')
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
