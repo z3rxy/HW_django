@@ -1,9 +1,9 @@
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import post_delete
 from django.dispatch import receiver
-from .models import Student, Grade
+from .models import StudentToSubject, Grade
 
-@receiver(m2m_changed, sender=Student.subjects.through)
-def remove_grades_on_subject_removal(sender, instance, action, reverse, pk_set, **kwargs):
-    if action == 'post_remove':
-        for subject_id in pk_set:
-            Grade.objects.filter(student=instance, subject_id=subject_id).delete()
+@receiver(post_delete, sender=StudentToSubject)
+def remove_grades_on_subject_removal(sender, instance, **kwargs):
+    student = instance.student
+    subject = instance.subject
+    Grade.objects.filter(student=student, subject=subject).delete()
